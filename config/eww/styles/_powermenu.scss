@@ -1,0 +1,62 @@
+.powermenu-box {
+  background-color: $bg-surface;
+  border: 1px solid $urgent;
+  border-radius: $radius-md;
+  padding: 10px 12px;
+
+  .powermenu-title {
+    color: $urgent;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    font-weight: bold;
+  }
+
+  .power-btn {
+    background-color: $bg-dark;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: $radius-sm;
+    padding: 8px 0;
+    font-size: 18px;
+    transition: all 0.2s ease;
+
+    &.shutdown {
+      color: $urgent;
+
+      &:hover {
+        background-color: $urgent;
+        color: $bg-dark;
+        border-color: $urgent;
+      }
+    }
+
+    &.reboot {
+      color: $warning;
+
+      &:hover {
+        background-color: $warning;
+        color: $bg-dark;
+        border-color: $warning;
+      }
+    }
+
+    &.logout {
+      color: $primary;
+
+      &:hover {
+        background-color: $primary;
+        color: $bg-dark;
+        border-color: $primary;
+      }
+    }
+
+    &.suspend {
+      color: $text-main;
+
+      &:hover {
+        background-color: $text-main;
+        color: $bg-dark;
+        border-color: $text-main;
+      }
+    }
+  }
+}

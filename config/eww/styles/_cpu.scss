@@ -1,0 +1,52 @@
+.cpu-popup-box {
+  background-color: $bg-surface;
+  border: 1px solid $primary;
+  border-radius: $radius-md;
+  padding: 12px;
+
+  .cpu-title {
+    color: $text-muted;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .cpu-temp-val {
+    color: $primary;
+    font-weight: 900;
+  }
+
+  .section-title {
+    color: $primary;
+    font-size: 10px;
+    font-weight: bold;
+    border-bottom: 1px solid $border-color;
+    padding-bottom: 2px;
+    margin-top: 4px;
+  }
+
+  .temp-row {
+    background-color: $bg-dark;
+    border-radius: $radius-sm;
+    padding: 5px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .temp-label {
+    font-size: 11px;
+    color: $text-main;
+  }
+
+  .cpu-bar {
+    trough {
+      background-color: $bg-dark;
+      border-radius: $radius-sm;
+      min-height: 8px;
+      border: 1px solid $border-color;
+    }
+
+    progress {
+      background-color: $primary;
+      border-radius: $radius-sm;
+    }
+  }
+}

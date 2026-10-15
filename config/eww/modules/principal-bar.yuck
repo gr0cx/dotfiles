@@ -1,0 +1,94 @@
+; --- BAR MODULES ---
+(defwidget left-module []
+  (box :class "block-left" :halign "start" :space-evenly false :spacing 10
+    (box :class "box-user"
+      (label :class "icon-user" :valign "center" :halign "center" :text ""))
+    
+    (eventbox :cursor "pointer"
+      (button :class "btn-clock"
+        :onclick "~/.config/eww/scripts/popup.sh calendar-window"
+        (label :text "${datetime}")))))
+
+(defwidget center-module []
+  (box :class "block-center" :halign "center"
+    (literal :content workspaces)))
+
+(defwidget right-module []
+  (box :class "block-right" :halign "end" :space-evenly false :spacing 8
+    (notif-bar-btn)
+    (eventbox :cursor "pointer"
+      (button :class "btn-update ${total_updates != '' && total_updates != '0' ? 'has-updates' : ''}"
+        :onclick "kitty --class FloatingTerm -e sh -c 'sudo pacman -Syu; echo -e \"\\n --- PAQUETES AUR ---\\n\"; paru -Sua; eww update total_updates=$(~/.config/eww/scripts/principal-bar/updates.sh); echo -e \"\\nPresiona Enter para cerrar...\"; read' &"
+        (box :space-evenly false :spacing 6
+          (label :class "icon" :text '󰏔')
+          (label :text "${total_updates != '' ? total_updates : '0'}"))))
+    
+    (box :class "metric-box ram" :space-evenly false :spacing 6
+      (label :class "icon" :text "󰍛")
+      (label :text "${round(EWW_RAM.available_mem / 1073741824, 1)}/${round(EWW_RAM.total_mem / 1073741824, 1)} GiB"))
+    
+    (box :class "metric-box ssd" :space-evenly false :spacing 6
+      (label :class "icon" :text "󰋊")
+      (label :text "${round(EWW_DISK['/'].used_perc, 1)}%"))
+    
+    (eventbox :cursor "pointer"
+      (button :class "btn-cpu"
+        :onclick "~/.config/eww/scripts/popup.sh cpu-window"
+        (box :space-evenly false :spacing 6
+          (label :class "icon" :text "󰻠")
+          (label :text "${EWW_TEMPS.CORETEMP_PACKAGE_ID_0}ºC"))))
+    
+    (box :class "metric-box battery ${EWW_BATTERY != '' && EWW_BATTERY['BAT0'].capacity <= 20 ? 'bat-low' : ''}"
+      :space-evenly false
+      :spacing 6
+      (label :class "icon"
+        :text "${EWW_BATTERY == '' ? '󰚥' :
+        EWW_BATTERY['BAT0'].status == 'Charging' ? '󰂄' :
+        EWW_BATTERY['BAT0'].capacity > 90 ? '󰁹' :
+        EWW_BATTERY['BAT0'].capacity > 80 ? '󰂂' :
+        EWW_BATTERY['BAT0'].capacity > 70 ? '󰂁' :
+        EWW_BATTERY['BAT0'].capacity > 60 ? '󰂀' :
+        EWW_BATTERY['BAT0'].capacity > 50 ? '󰁿' :
+        EWW_BATTERY['BAT0'].capacity > 40 ? '󰁾' :
+        EWW_BATTERY['BAT0'].capacity > 30 ? '󰁽' :
+        EWW_BATTERY['BAT0'].capacity > 20 ? '󰁼' :
+      EWW_BATTERY['BAT0'].capacity > 10 ? '󰁻' : '󰁺'}")
+      (label :text "${EWW_BATTERY != '' ? (EWW_BATTERY['BAT0'].capacity + '%') : 'AC'}"))
+    
+    (eventbox :cursor "pointer"
+      (button :class "btn-vol ${volume_status == 'MUT' || volume_status == 'off' || volume_status == '' ? 'vol-muted' : ''}"
+        :onclick "~/.config/eww/scripts/popup.sh volume-window"
+        (label :class "icon"
+          :text "${volume_status == 'MUT' || volume_status == 'off' || volume_status == '' ? '󰝟' :
+          matches(volume_status, '^(6[7-9]|[7-9][0-9]|100)%?$') ? '󰕾' :
+          matches(volume_status, '^(3[4-9]|[4-5][0-9]|6[0-6])%?$') ? '󰖀' : '󰕿'}")))
+    
+    (eventbox :cursor "pointer"
+      (button :class "btn-net ${net_status == 'Offline' || net_status == 'N/A' ? 'net-off' : ''}"
+        :onclick "kitty -e nmtui &"
+        (box :space-evenly false :spacing 6
+          (label :class "icon"
+            :text "${net_status == 'Offline' || net_status == 'N/A' ? '󰤮' :
+          net_status == 'Ethernet' ? '󰈀' : '󰤨' }")
+          (label :text "${net_status}"))))
+    
+    (eventbox :cursor "pointer"
+      (button :class "btn-power"
+        :onclick "~/.config/eww/scripts/popup.sh powermenu-window"
+        (label :class "icon-power" :valign "center" :halign "center" :text "󰐥")))))
+
+; --- PRINCIPAL CONTAINER ---
+(defwidget bar-layout []
+  (centerbox :class "bar-layout" :orientation "horizontal"
+    (left-module)
+    (center-module)
+    (right-module)))
+
+; --- BAR WINDOW ---
+(defwindow principal-bar
+  :monitor 0
+  :geometry (geometry :x "0%" :y "8px" :width "98.85%" :height "36px" :anchor "top center")
+  :stacking "bg"
+  :windowtype "normal"
+  :wm-ignore false
+  (bar-layout))

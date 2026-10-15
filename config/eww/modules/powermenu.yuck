@@ -1,0 +1,37 @@
+(defwidget powermenu-pop []
+  (box :class "powermenu-box"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+    
+    (label :class "powermenu-title" :text "POWER MENU")
+    
+    (box :class "powermenu-btns"
+      :orientation "h"
+      :space-evenly true
+      :spacing 8
+      
+      (eventbox :cursor "pointer"
+        (button :class "power-btn shutdown"
+          :tooltip "Apagar sistema"
+          :onclick "systemctl poweroff"
+          (label :text "󰐥")))
+      
+      (eventbox :cursor "pointer"
+        (button :class "power-btn reboot"
+          :tooltip "Reiniciar sistema"
+          :onclick "systemctl reboot"
+          (label :text "󰑐")))
+      
+      (eventbox :cursor "pointer"
+        (button :class "power-btn logout"
+          :tooltip "Cerrar sesión"
+          :onclick "bspc quit"
+          (label :text "󰤄"))))))
+
+(defwindow powermenu-window
+  :monitor 0
+  :geometry (geometry :x "-10px" :y "50px" :width "240px" :height "95px" :anchor "top right")
+  :stacking "fg"
+  :wm-ignore true
+  (powermenu-pop))

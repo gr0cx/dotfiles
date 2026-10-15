@@ -1,0 +1,4 @@
+cat << 'EOF' >~/.config/eww/sxhkd_popups
+Escape
+    ~/.config/eww/scripts/close_last_popup.sh
+EOF

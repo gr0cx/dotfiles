@@ -1,0 +1,28 @@
+(defwidget volume-pop []
+  (box :class "volume-popup-box"
+    :orientation "h"
+    :space-evenly false
+    :spacing 10
+    
+    ; MUTE BUTTON
+    (eventbox :cursor "pointer"
+      (button :class "btn-mute ${volume_status == 'MUT' || volume_status == 'off' || volume_status == '' ? 'is-muted' : ''}"
+        :onclick "~/.config/sxhkd/scripts/mute_script.sh"
+        (label :class "icon"
+          :text "${volume_status == 'MUT' || volume_status == 'off' || volume_status == '' ? '󰝟' :
+          matches(volume_status, '^(6[7-9]|[7-9][0-9]|100)%?$') ? '󰕾' :
+          matches(volume_status, '^(3[4-9]|[4-5][0-9]|6[0-6])%?$') ? '󰖀' : '󰕿'}")))
+    
+    ; VOLUME SLIDER
+    (scale :min 0
+      :max 101
+      :value "${volume_status == 'MUT' || volume_status == 'off' || volume_status == 'N/A' || volume_status == '' ? 0 : replace(volume_status, '%', '')}"
+      :onchange "amixer set Master {}% unmute & amixer set Speaker {}% unmute"
+    :hexpand true)))
+
+(defwindow volume-window
+  :monitor 0
+  :geometry (geometry :x "-20px" :y "50px" :width "220px" :height "40px" :anchor "top right")
+  :stacking "fg"
+  :wm-ignore true
+  (volume-pop))

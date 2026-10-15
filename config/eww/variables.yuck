@@ -1,0 +1,7 @@
+(defpoll datetime :interval "5s" "date '+%d %b | %H:%M'")
+(defpoll user :interval "24h" "whoami")
+(defpoll total_updates :initial "0" :interval "30m" "~/.config/eww/scripts/principal-bar/updates.sh")
+
+(deflisten volume_status :initial "N/A" "~/.config/eww/scripts/principal-bar/get_vol.sh")
+(deflisten net_status :initial "N/A" "~/.config/eww/scripts/principal-bar/get_net.sh")
+(deflisten workspaces :initial "(box)" "~/.config/eww/scripts/principal-bar/get_workspaces.sh")

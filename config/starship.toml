@@ -1,0 +1,76 @@
+# ==============================================================================
+# STARSHIP - CYBER / HACKER
+# ==============================================================================
+
+add_newline = true
+
+format = """
+$os\
+$username\
+$directory\
+$git_branch\
+$git_status\
+$cmd_duration\
+$character"""
+
+# --- USERNAME ---
+[username]
+style_root = "bold #ff2a6d"
+format = "[  $user  ]($style) "
+disabled = false
+show_always = false
+
+# --- PROMPT SYMBOL ---
+[character]
+success_symbol = "[❯❯](#00ff66) "
+error_symbol   = "[❯❯](#ff2a6d) "
+vimcmd_symbol  = "[❮❮](#00aaff) "
+
+# --- SYSTEM ICON ---
+[os]
+disabled = false
+style = "bold #00ff66"
+format = "[$symbol]($style) "
+
+[os.symbols]
+Arch = "󰣇"
+Ubuntu = "󰕈"
+Debian = "󰣚"
+Fedora = "󰣛"
+Linux = "󰌽"
+
+# --- DIRECTORY PATH ---
+[directory]
+style = "bold #00ff66"
+format = "[$path]($style)[$read_only]($read_only_style) "
+truncation_length = 0
+truncate_to_repo = false
+read_only = " 󰌾"
+read_only_style = "bold #ff2a6d"
+
+# --- GIT BRANCH ---
+[git_branch]
+symbol = " "
+style = "bold #bd93f9"
+format = "[:: $symbol$branch]($style) "
+
+# --- GIT STATUS ---
+[git_status]
+style = "bold #ffc83b"
+format = "([$all_status$ahead_behind]($style) )"
+conflicted = "󰞇 "
+ahead = "⇡${count} "
+behind = "⇣${count} "
+diverged = "⇕ "
+untracked = "?${count} "
+stashed = "📦 "
+modified = "!${count} "
+staged = "+${count} "
+renamed = "»${count} "
+deleted = "✘${count} "
+
+# --- COMMAND TIME EXECUTION ---
+[cmd_duration]
+min_time = 2_000
+style = "bold #00aaff"
+format = "[took $duration]($style) "

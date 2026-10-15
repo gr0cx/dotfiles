@@ -1,0 +1,42 @@
+(defwidget cpu-pop []
+  (box :class "cpu-popup-box"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+    
+    (box :class "cpu-header" :space-evenly true
+      (label :class "cpu-title" :text "HARDWARE MON")
+      (label :class "cpu-temp-val" :text "${EWW_TEMPS.CORETEMP_PACKAGE_ID_0}ºC"))
+    
+    (box :class "cpu-usage-box" :orientation "h" :space-evenly false :spacing 10
+      (label :text "CPU:")
+      (progress :value {EWW_CPU.avg}
+        :orientation "h"
+        :hexpand true
+      :class "cpu-bar")
+      (label :text "${round(EWW_CPU.avg, 0)}%"))
+    
+    (box :class "sensor-section" :orientation "v" :space-evenly false :spacing 6
+      (label :class "section-title" :text "NÚCLEOS CPU" :halign "start")
+      (box :class "temp-row" :space-evenly true
+        (label :class "temp-label" :text "Core 0: ${EWW_TEMPS.CORETEMP_CORE_0}ºC")
+        (label :class "temp-label" :text "Core 1: ${EWW_TEMPS.CORETEMP_CORE_1}ºC"))
+      (box :class "temp-row" :space-evenly true
+        (label :class "temp-label" :text "Core 2: ${EWW_TEMPS.CORETEMP_CORE_2}ºC")
+        (label :class "temp-label" :text "Core 3: ${EWW_TEMPS.CORETEMP_CORE_3}ºC")))
+    
+    (box :class "sensor-section" :orientation "v" :space-evenly false :spacing 6
+      (label :class "section-title" :text "SISTEMA & NVMe" :halign "start")
+      (box :class "temp-row" :space-evenly true
+        (label :class "temp-label" :text "Placa (ACPI): ${EWW_TEMPS.ACPITZ_TEMP1}ºC")
+        (label :class "temp-label" :text "NVMe Base: ${round(EWW_TEMPS["NVME_COMPOSITE_SK_HYNIX_BC511_HFM512GDJTNI-82A0A_TEMP1"], 0)}ºC"))
+      (box :class "temp-row" :space-evenly true
+        (label :class "temp-label" :text "NVMe Sens 1: ${round(EWW_TEMPS["NVME_SENSOR_1_SK_HYNIX_BC511_HFM512GDJTNI-82A0A_TEMP2"],0)}ºC")
+        (label :class "temp-label" :text "NVMe Sens 2: ${round(EWW_TEMPS["NVME_SENSOR_2_SK_HYNIX_BC511_HFM512GDJTNI-82A0A_TEMP3"],0)}ºC")))))
+
+(defwindow cpu-window
+  :monitor 0
+  :geometry (geometry :x "-140px" :y "50px" :width "300px" :height "270px" :anchor "top right")
+  :stacking "fg"
+  :wm-ignore true
+  (cpu-pop))

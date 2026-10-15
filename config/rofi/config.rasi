@@ -1,0 +1,124 @@
+configuration {
+    modi:                       "drun,run,window,filebrowser";
+    show-icons:                 true;
+    display-drun:               "󰍉 LAUNCH";
+    display-run:                "󰅂 CMD";
+    display-window:             "󱂬 WIN";
+    display-filebrowser:        "󰉋 FILES";
+    drun-display-format:        "{name}";
+    window-format:              "{w} · {c} · {t}";
+    font:                       "Hack Nerd Font 11";
+}
+
+@theme "/dev/null"
+
+* {
+    /* --- TOXIC PALETTE --- */
+    bg-dark:        #0a0c0e;
+    bg-surface:     #121518;
+    bg-hover:       #1a2026;
+    
+    primary:        #00ff66;
+    primary-muted:  #00b347;
+    
+    text-main:      #e0e6ed;
+    text-muted:     #5c6b73;
+    
+    urgent:         #ff2a6d;
+    border-col:     #00ff66;
+
+    background-color: transparent;
+    text-color:       @text-main;
+    margin:           0;
+    padding:          0;
+    spacing:          0;
+}
+
+window {
+    location:         center;
+    anchor:           center;
+    width:            620px;
+    x-offset:         0;
+    y-offset:         0;
+
+    background-color: @bg-dark;
+    border:           2px;
+    border-color:     @border-col;
+    border-radius:    6px;
+    padding:          16px;
+}
+
+mainbox {
+    orientation:      vertical;
+    children:         [ inputbar, listview ];
+    spacing:          14px;
+}
+
+inputbar {
+    background-color: @bg-surface;
+    border:           1px;
+    border-color:     rgba(0, 255, 102, 0.25);
+    border-radius:    4px;
+    padding:          10px 14px;
+    spacing:          10px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color:       @primary;
+    font:             "Hack Nerd Font Bold 11";
+}
+
+entry {
+    placeholder:      "SEARCH_SYSTEM...";
+    placeholder-color:@text-muted;
+    text-color:       @text-main;
+    cursor:           text;
+}
+
+listview {
+    lines:            8;
+    columns:          1;
+    fixed-height:     true;
+    spacing:          6px;
+    cycle:            true;
+    scrollbar:        false;
+}
+
+element {
+    padding:          8px 12px;
+    border-radius:    4px;
+    spacing:          12px;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @text-main;
+}
+
+element selected.normal {
+    background-color: @bg-hover;
+    text-color:       @primary;
+    border:           0px 0px 0px 3px;
+    border-color:     @primary;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color:       @text-main;
+}
+
+element normal.urgent, element selected.urgent {
+    text-color:       @urgent;
+}
+
+element-icon {
+    size:             22px;
+    vertical-align:   0.5;
+}
+
+element-text {
+    text-color:       inherit;
+    vertical-align:   0.5;
+    font:             "Hack Nerd Font 10";
+}

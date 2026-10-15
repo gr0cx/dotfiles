@@ -1,0 +1,39 @@
+.calendar-pop {
+  background-color: $bg-surface;
+  border: 1px solid $primary;
+  border-radius: $radius-md;
+  padding: 10px;
+}
+
+calendar.cal-element {
+  background-color: transparent;
+  color: $text-main;
+  font-family: $font-main;
+
+  &.header {
+    color: $primary;
+    font-weight: bold;
+    border-bottom: 1px solid $border-color;
+  }
+
+  &.button {
+    color: $primary;
+    border-radius: $radius-sm;
+
+    &:hover {
+      background-color: $bg-hover;
+      color: $primary;
+    }
+  }
+
+  &:selected {
+    background-color: $primary;
+    color: $bg-dark;
+    border-radius: $radius-sm;
+    font-weight: 900;
+  }
+
+  &:indeterminate {
+    color: $text-muted;
+  }
+}

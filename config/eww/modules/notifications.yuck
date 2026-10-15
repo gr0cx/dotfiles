@@ -1,0 +1,104 @@
+(defvar notif_toasts "[]")
+(defvar notif_history "[]")
+(defvar notif_count 0)
+
+; --- BAR BUTTON ---
+(defwidget notif-bar-btn []
+  (eventbox :cursor "pointer"
+    (button :class "btn-notif"
+      :onclick "~/.config/eww/scripts/notif_daemon.py reset_count & ~/.config/eww/scripts/popup.sh notif-center-window"
+      (box :space-evenly false :spacing 6 :valign "center" :halign "center"
+        (label :class "notif-bell" :text {notif_count > 0 ? "󱅫" : "󰂜"} :valign "center" :halign "center")
+        (label :visible {notif_count > 0} :class "notif-badge" :text "${notif_count}")))))
+
+; --- TOAST ---
+(defwidget toast-card [toast]
+  (revealer :reveal {toast.reveal}
+    :transition "slide-left"
+    :duration "350ms"
+    (eventbox :onclick "~/.config/eww/scripts/notif_daemon.py dismiss ${toast.id}"
+      :onmiddleclick "~/.config/eww/scripts/notif_daemon.py action ${toast.id}"
+      (box :class "toast-card toast-${toast.urgency}" :space-evenly false :spacing 12
+        (box :class "notif-icon-box" :valign "center"
+          (image :visible {toast.icon.type == "image"} :path {toast.icon.value} :image-width 28 :image-height 28)
+          (label :visible {toast.icon.type == "text"} :class "notif-icon-txt" :text {toast.icon.value}))
+        (box :orientation "v" :space-evenly false :spacing 2 :hexpand true
+          (box :space-evenly false
+            (label :class "notif-app" :text {toast.app} :hexpand true :xalign 0)
+            (label :visible {toast.has_action} :class "notif-hint" :text "M3: Abrir"))
+          (label :class "notif-summary" :text {toast.summary} :xalign 0 :hexpand true :wrap true)
+          (label :visible {toast.body != ""} :class "notif-body" :text {toast.body} :xalign 0 :hexpand true :wrap true))))))
+
+(defwindow notif-toast-window
+  :monitor 0
+  :geometry (geometry :x "-11px" :y "50px" :width "350px" :anchor "top right")
+  :stacking "fg"
+  :wm-ignore true
+  (box :orientation "v" :space-evenly false :spacing 8
+    (for toast in notif_toasts
+      (toast-card :toast toast))))
+
+; --- HISTORY PANEL CARD ---
+(defwidget history-card [item]
+  (eventbox :cursor {item.has_more ? "pointer" : "default"}
+    :onclick {item.has_more ? "~/.config/eww/scripts/notif_daemon.py toggle_expand ${item.id}" : ""}
+    (box :class {item.expanded
+      ? "history-card history-${item.urgency} expanded"
+      : "history-card history-${item.urgency}"}
+      :width 330
+      :orientation "v"
+      :space-evenly false
+      :hexpand true
+      :halign "fill"
+      
+      (box :visible {!item.expanded}
+        :space-evenly false :spacing 10 :valign "center" :hexpand true
+        (box :class "notif-icon-box" :valign "center"
+          (image :visible {item.icon.type == "image"} :path {item.icon.value} :image-width 22 :image-height 22)
+          (label :visible {item.icon.type == "text"} :class "notif-icon-txt" :text {item.icon.value}))
+        (box :orientation "v" :space-evenly false :spacing 2 :hexpand true
+          (box :space-evenly false
+            (label :class "notif-app" :text {item.app} :hexpand true :xalign 0)
+            (label :visible {item.has_more} :class "notif-expand-icon" :text "󰅀"))
+          (label :class "notif-summary" :text {item.summary_line}
+          :xalign 0 :hexpand true :limit-width 38 :show-truncated true)
+          (label :visible {item.body_line != ""} :class "notif-body" :text {item.body_line}
+          :xalign 0 :hexpand true :limit-width 44 :show-truncated true))
+        (button :class "btn-delete-history" :cursor "pointer" :valign "start"
+          :onclick "~/.config/eww/scripts/notif_daemon.py delete_history ${item.id}"
+          (label :text "󰅖")))
+      
+      (box :visible {item.expanded}
+        :orientation "v" :space-evenly false :spacing 8 :hexpand true
+        (box :space-evenly false :spacing 10 :valign "center" :hexpand true
+          (box :class "notif-icon-box" :valign "center"
+            (image :visible {item.icon.type == "image"} :path {item.icon.value} :image-width 22 :image-height 22)
+            (label :visible {item.icon.type == "text"} :class "notif-icon-txt" :text {item.icon.value}))
+          (label :class "notif-app" :text {item.app} :hexpand true :xalign 0)
+          (label :class "notif-expand-icon" :text "󰅃")
+          (button :class "btn-delete-history" :cursor "pointer" :valign "center"
+            :onclick "~/.config/eww/scripts/notif_daemon.py delete_history ${item.id}"
+            (label :text "󰅖")))
+        (label :class "notif-summary" :text {item.summary_wrapped}
+        :xalign 0 :halign "start")
+        (box :visible {item.body != ""} :class "history-body-box" :hexpand true :halign "fill"
+          (label :class "notif-body" :text {item.body_wrapped}
+          :xalign 0 :halign "start"))))))
+
+(defwindow notif-center-window
+  :monitor 0
+  :geometry (geometry :x "-11px" :y "50px" :width "360px" :anchor "top right")
+  :stacking "fg"
+  :wm-ignore true
+  (box :class "notif-center-box" :orientation "v" :space-evenly false :spacing 12
+    (box :class "notif-center-header" :space-evenly false
+      (label :class "notif-center-title" :text "Notificaciones" :hexpand true :halign "start")
+      (eventbox :cursor "pointer"
+        (button :class "btn-clear-notifs"
+          :onclick "~/.config/eww/scripts/notif_daemon.py clear"
+          (label :text "󰎟 Limpiar"))))
+    (scroll :vscroll true :hscroll false :height 420 :hexpand true
+      (box :orientation "v" :space-evenly false :spacing 8 :hexpand true :halign "fill"
+        (label :visible {arraylength(notif_history) == 0} :class "notif-empty" :text "Sin notificaciones")
+        (for item in notif_history
+          (history-card :item item))))))

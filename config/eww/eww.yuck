@@ -1,0 +1,10 @@
+(include "./variables.yuck")
+
+(include "./modules/notifications.yuck")
+
+(include "./modules/principal-bar.yuck")
+
+(include "./modules/calendar.yuck")
+(include "./modules/cpu.yuck")
+(include "./modules/volume.yuck")
+(include "./modules/powermenu.yuck")

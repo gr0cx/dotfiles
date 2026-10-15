@@ -1,0 +1,64 @@
+.volume-popup-box {
+  background-color: $bg-surface;
+  border: 1px solid $primary;
+  border-radius: $radius-md;
+  padding: 8px 12px;
+
+  button.btn-mute {
+    background-color: $bg-dark;
+    color: $primary;
+    padding: 0px 8px;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: $radius-sm;
+    border: 1px solid $border-color;
+    transition: all 0.2s ease;
+
+    .icon {
+      font-size: 15px;
+    }
+
+    &:hover:not(.is-muted) {
+      background-color: $primary;
+      color: $bg-dark;
+      border-color: $primary;
+    }
+
+    &.is-muted {
+      color: $urgent;
+      border-color: rgba($urgent, 0.4);
+
+      &:hover {
+        background-color: $urgent;
+        color: $bg-dark;
+        border-color: $urgent;
+      }
+    }
+  }
+
+  scale {
+    trough {
+      background-color: $bg-dark;
+      border-radius: $radius-sm;
+      min-height: 8px;
+      border: 1px solid $border-color;
+    }
+
+    highlight {
+      background-color: $primary;
+      border-radius: $radius-sm;
+    }
+
+    slider {
+      background-color: $text-main;
+      border-radius: $radius-sm;
+      min-width: 12px;
+      min-height: 12px;
+      margin: -2px 0;
+
+      &:hover {
+        background-color: $primary;
+      }
+    }
+  }
+}

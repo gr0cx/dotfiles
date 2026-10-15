@@ -1,0 +1,19 @@
+(defwidget calendar-widget []
+  (box :class "calendar-pop"
+    :orientation "v"
+    :space-evenly false
+    (calendar :class "cal-element"
+      :show-details true
+      :show-heading true
+    :show-day-names true)))
+
+(defwindow calendar-window
+  :monitor 0
+  :geometry (geometry :x "80px"
+    :y "50px"
+    :width "240px"
+    :height "200px"
+  :anchor "top left")
+  :stacking "fg"
+  :wm-ignore true
+  (calendar-widget))

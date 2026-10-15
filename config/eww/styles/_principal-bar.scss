@@ -1,0 +1,256 @@
+* {
+  all: unset;
+  font-family: $font-main;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bar-layout {
+  background-color: $bg-dark;
+  color: $text-main;
+  border-bottom: 2px solid $primary-muted;
+  padding: 0 8px;
+}
+
+.block-left,
+.block-center,
+.block-right {
+  padding: 4px 0;
+}
+
+// --- LEFT MODULE ---
+
+.box-user {
+  background-color: $bg-surface;
+  padding: 4px 15px 3px 10px;
+  border-radius: $radius-sm;
+  border-left: 3px solid $primary;
+
+  .icon-user {
+    color: $primary;
+    font-size: 17px;
+  }
+}
+
+.btn-clock {
+  color: $text-main;
+  background-color: $bg-surface;
+  padding: 4px 10px;
+  border-radius: $radius-md;
+  border: 1px solid $border-color;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $bg-hover;
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+// --- WORKSPACES ---
+.workspaces {
+  background-color: $bg-surface;
+  padding: 3px 6px;
+  border-radius: $radius-md;
+  border: 1px solid $border-color;
+
+  .ws-btn {
+    padding: 2px 8px;
+    border-radius: $radius-sm;
+    color: $text-muted;
+    transition: all 0.15s ease;
+
+    &.ws-occupied {
+      color: $text-main;
+      border-bottom: 2px solid $text-muted;
+    }
+
+    &.ws-empty {
+      color: $primary;
+      background-color: $primary-glow;
+      border: 1px solid $primary;
+    }
+
+    &.ws-focused {
+      color: $bg-dark;
+      background-color: $primary;
+      font-weight: 900;
+      border-radius: $radius-sm;
+    }
+
+    &.ws-urgent {
+      color: $urgent;
+      background-color: rgba(255, 42, 109, 0.2);
+      border: 1px solid $urgent;
+    }
+
+    &:hover:not(.ws-focused) {
+      color: $primary;
+      background-color: $bg-hover;
+    }
+  }
+}
+
+// --- RIGHT MODULE ---
+.block-right {
+  .btn-update {
+    background-color: $bg-surface;
+    padding: 4px 10px;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    color: $text-muted;
+
+    .icon {
+      color: $text-muted;
+      font-size: 14px;
+    }
+
+    &:hover {
+      background-color: $bg-hover;
+      border-color: $primary;
+      color: $primary;
+
+      .icon {
+        color: $primary;
+      }
+    }
+
+    &.has-updates {
+      border-color: rgba($primary, 0.6);
+      color: $primary;
+      background-color: rgba($primary, 0.08);
+
+      .icon {
+        color: $primary;
+      }
+
+      &:hover {
+        background-color: rgba($primary, 0.2);
+        border-color: $primary;
+      }
+    }
+  }
+
+  .metric-box {
+    background-color: $bg-surface;
+    padding: 4px 8px;
+    border-radius: $radius-sm;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    &.ram .icon {
+      color: #00e5ff;
+    }
+
+    &.ssd .icon {
+      color: #ff9900;
+    }
+
+    &.battery {
+      .icon {
+        color: $primary;
+      }
+
+      &.bat-low .icon {
+        color: $urgent;
+      }
+    }
+  }
+
+  .btn-cpu {
+    background-color: $bg-surface;
+    padding: 4px 10px;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    color: $text-main;
+
+    .icon {
+      color: $primary;
+    }
+
+    &:hover {
+      background-color: $bg-hover;
+      border-color: $primary;
+    }
+  }
+
+  .btn-vol {
+    background-color: $bg-surface;
+    padding: 4px 10px;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    color: $text-main;
+
+    .icon {
+      color: $primary;
+      font-size: 14px;
+    }
+
+    &:hover {
+      background-color: $bg-hover;
+      border-color: $primary;
+
+      .icon {
+        color: $primary;
+      }
+    }
+
+    &.vol-muted {
+      border-color: rgba($urgent, 0.4);
+
+      .icon {
+        color: $urgent;
+      }
+
+      &:hover {
+        background-color: rgba($urgent, 0.15);
+        border-color: $urgent;
+
+        .icon {
+          color: $urgent;
+        }
+      }
+    }
+  }
+
+  .btn-net {
+    background-color: $bg-surface;
+    padding: 4px 10px;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    color: $text-main;
+
+    .icon {
+      color: #bd93f9;
+    }
+
+    &.net-off .icon {
+      color: $urgent;
+    }
+
+    &:hover {
+      background-color: $bg-hover;
+      border-color: $primary;
+    }
+  }
+
+  .btn-power {
+    background-color: $bg-surface;
+    color: $urgent;
+    padding: 4px 10px;
+    border-radius: $radius-sm;
+    border: 1px solid rgba($urgent, 0.4);
+
+    .icon-power {
+      font-size: 14px;
+    }
+
+    &:hover {
+      background-color: $urgent;
+      border-color: $urgent;
+
+      .icon-power {
+        color: $bg-dark;
+      }
+    }
+  }
+}
