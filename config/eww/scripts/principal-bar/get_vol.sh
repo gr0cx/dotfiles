@@ -1,18 +1,17 @@
 #!/bin/sh
 
 get_vol() {
-	amixer get Master | awk -F'[][]' '/Left:|Mono:/ {
-        if ($0 ~ /\[off\]/) {
-            print "MUT"
-        } else {
-            print $2
-        }
-        exit
-    }'
+	if pamixer --get-mute | grep -q "true"; then
+		echo "MUT"
+	else
+		echo "$(pamixer --get-volume)%"
+	fi
 }
 
 get_vol
 
-stdbuf -oL alsactl monitor 2>/dev/null | while read -r _; do
-	get_vol
+pactl subscribe 2>/dev/null | while read -r event; do
+	if echo "$event" | grep -q "change"; then
+		get_vol
+	fi
 done
