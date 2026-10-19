@@ -162,7 +162,8 @@ sudo pacman -Syu --needed --noconfirm \
 	base-devel git rust zsh lsd bat fzf starship firefox feh \
 	bspwm sxhkd kitty picom rofi python python-dbus python-gobject \
 	ttf-hack-nerd lightdm lightdm-gtk-greeter accountsservice \
-	maim imagemagick xsecurelock pamixer alsa-utils playerctl brightnessctl \
+	maim imagemagick xsecurelock \
+	pipewire pipewire-pulse pipewire-alsa wireplumber pamixer alsa-utils playerctl brightnessctl \
 	jq socat xclip xorg-setxkbmap mesa mpv libnotify \
 	dconf xdg-desktop-portal xdg-desktop-portal-gtk
 step_pause
@@ -303,6 +304,8 @@ fi
 if [ -d "$DOTFILES_DIR/system/themes/TNPUNK" ]; then
 	sudo cp -rf "$DOTFILES_DIR/system/themes/TNPUNK/"* /usr/share/themes/TNPUNK/
 fi
+
+systemctl --user enable pipewire pipewire-pulse wireplumber
 
 sudo systemctl enable accounts-daemon.service
 sudo systemctl enable lightdm.service
