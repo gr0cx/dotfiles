@@ -177,12 +177,16 @@ F4
 
 # Full screenshot to clipboard
 super + x
-  maim | xclip -selection clipboard -t image/png
+  "$HOME/.local/bin/screenshot.sh" --full
 
 # Screenshot to clipboard
 super + shift + x
-  maim -s | xclip -selection clipboard -t image/png
+  "$HOME/.local/bin/screenshot.sh" --select
+
+# Window screenshot to clipboard
+super + alt + x
+  "$HOME/.local/bin/screenshot.sh" --window
 
 # Screenshot
 super + Print
-  maim -s "$HOME/Pictures/Screenshots/screenshot-$(date +%Y%m%d_%H%M%S).png"
+  "$HOME/.local/bin/screenshot.sh" --save
