@@ -163,7 +163,7 @@ sudo pacman -Syu --needed --noconfirm \
 	bspwm sxhkd kitty picom rofi python python-dbus python-gobject \
 	ttf-hack-nerd lightdm lightdm-gtk-greeter accountsservice \
 	maim imagemagick xsecurelock pamixer alsa-utils playerctl brightnessctl \
-	jq socat xclip xorg-setxkbmap mesa mpv \
+	jq socat xclip xorg-setxkbmap mesa mpv libnotify \
 	dconf xdg-desktop-portal xdg-desktop-portal-gtk
 step_pause
 
