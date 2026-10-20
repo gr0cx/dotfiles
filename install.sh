@@ -133,7 +133,7 @@ step_pause
 # 3. BACKUP AND SECURE LINK
 # ------------------------------------------------------------------------------
 
-safe_symlink() {
+safe_copy() {
 	local src="$1"
 	local dest="$2"
 
@@ -142,15 +142,13 @@ safe_symlink() {
 	mkdir -p "$(dirname "$dest")"
 
 	if [ -e "$dest" ] || [ -L "$dest" ]; then
-		if [ "$(readlink -f "$dest")" != "$src" ]; then
-			echo -e "  ${YELLOW}$MSG_BACKUP${RESET} $dest -> $BACKUP_DIR/"
-			mkdir -p "$BACKUP_DIR"
-			mv "$dest" "$BACKUP_DIR/" 2>/dev/null || true
-		fi
+		echo -e "  ${YELLOW}$MSG_BACKUP${RESET} $dest -> $BACKUP_DIR/"
+		mkdir -p "$BACKUP_DIR"
+		mv "$dest" "$BACKUP_DIR/" 2>/dev/null || true
 	fi
 
-	ln -sfn "$src" "$dest"
-	echo -e "  ${GREEN}$MSG_OK${RESET} $dest -> $src"
+	cp -rf "$src" "$dest"
+	echo -e "  ${GREEN}$MSG_OK${RESET} Installed -> $dest"
 }
 
 # ------------------------------------------------------------------------------
@@ -226,7 +224,7 @@ for file in "$DOTFILES_DIR/home/"*; do
 	[ -e "$file" ] || continue
 	filename="$(basename "$file")"
 	[[ "$filename" == "." || "$filename" == ".." || "$filename" == ".local" ]] && continue
-	safe_symlink "$file" "$HOME/$filename"
+	safe_copy "$file" "$HOME/$filename"
 done
 shopt -u dotglob
 
@@ -234,17 +232,17 @@ mkdir -p "$HOME/.local/bin"
 for script in "$DOTFILES_DIR/home/.local/bin/"*; do
 	[ -e "$script" ] || continue
 	scriptname="$(basename "$script")"
-	safe_symlink "$script" "$HOME/.local/bin/$scriptname"
+	safe_copy "$script" "$HOME/.local/bin/$scriptname"
 done
 
 mkdir -p "$HOME/.config"
 for item in "$DOTFILES_DIR/config/"*; do
 	[ -e "$item" ] || continue
 	itemname="$(basename "$item")"
-	safe_symlink "$item" "$HOME/.config/$itemname"
+	safe_copy "$item" "$HOME/.config/$itemname"
 done
 
-safe_symlink "$DOTFILES_DIR/assets" "$HOME/Pictures/Wallpapers"
+safe_copy "$DOTFILES_DIR/assets" "$HOME/Pictures/Wallpapers"
 step_pause
 
 read -rp "$(echo -e "${BOLD}$MSG_ROOT_PROMPT${RESET}")" response
@@ -256,9 +254,9 @@ if [[ "$response" =~ $CONFIRM_REGEX ]]; then
 	sudo cp -r "$ZSH_PLUGINS_DIR" /root/.zsh
 
 	echo -e "$MSG_ROOT_LINK"
-	sudo ln -sfn "$DOTFILES_DIR/home/.zshrc" "/root/.zshrc"
+	sudo ln -sfn "$HOME/.zshrc" "/root/.zshrc"
 	echo -e "  ${GREEN}$MSG_OK${RESET} /root/.zshrc -> $DOTFILES_DIR/home/.zshrc"
-	sudo ln -sfn "$DOTFILES_DIR/config/starship.toml" "/root/.config/starship.toml"
+	sudo ln -sfn "$HOME/.config/starship.toml" "/root/.config/starship.toml"
 	echo -e "  ${GREEN}$MSG_OK${RESET} /root/.config/starship.toml -> $DOTFILES_DIR/config/starship.toml"
 
 	echo -e "$MSG_ROOT_SHELL"
