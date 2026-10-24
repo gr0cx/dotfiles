@@ -16,7 +16,8 @@ return {
                 "markdown_inline",
                 "bash",
                 "json",
-                "yaml"
+                "yaml",
+                "html"
             },
             auto_install = true,
             highlight = {
