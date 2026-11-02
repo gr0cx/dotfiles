@@ -48,6 +48,7 @@ This repository is both the configuration and an **interactive system installer*
 | Rendering and wallpaper | Picom · `feh` | Compositor effects and wallpaper placement |
 | Shell and prompt | Zsh · Starship · fzf | Interactive shell, prompt, completion, aliases, and search |
 | Login and system look | LightDM · GTK theme | Display manager configuration and TNPUNK GTK theme |
+| Screen locking | `xsecurelock` · `xss-lock` · systemd sleep hook | Themed manual lock screen and locking around suspend/resume |
 
 The palette is built around `#0A0C0E` (near-black), `#121518` (surface), and `#00FF66` (toxic green), with muted slate and alert pink as supporting colors.
 
@@ -60,6 +61,7 @@ The palette is built around `#0A0C0E` (near-black), `#121518` (surface), and `#0
 - **Neovim** uses a modular Lua configuration with lazy.nvim, Treesitter, LSP, completion, and navigation, status-line, and Git plugins. On first launch, lazy.nvim downloads the configured plugins and the Treesitter setup installs its configured parsers.
 - **Rofi, Kitty, Picom, and Zsh** share the same color and typography choices. The shell configuration adds Zsh plugins, fzf styling, aliases, and a Starship prompt.
 - **LightDM and GTK** extend the look to the login screen and GTK 3 theme. The session startup files launch the desktop helpers and wallpaper.
+- **Screen locking** uses `xsecurelock` with a custom helper that captures and styles the current screen. `xss-lock` starts with the X session and requests the lock around suspend; a systemd sleep hook signals `xsecurelock` after resume.
 
 ### `03` / Repository map
 
@@ -81,6 +83,7 @@ The palette is built around `#0A0C0E` (near-black), `#121518` (surface), and `#0
 │   └── .zshrc                      # Zsh configuration
 ├── system/
 │   ├── lightdm/                    # Display-manager configuration
+│   ├── systemd/                    # logind settings and post-resume lock hook
 │   └── themes/TNPUNK/              # GTK theme files
 ├── screenshots/                    # Desktop and widget previews
 ├── install.sh                      # Interactive Arch Linux installer
@@ -124,7 +127,7 @@ The script uses `set -eo pipefail`, rejects execution as root, keeps its sudo au
 | 5 · Zsh plugins | Clones `zsh-syntax-highlighting` and `zsh-autosuggestions` into `~/.zsh`; downloads the Oh My Zsh `sudo` plugin into the same directory. Existing plugin directories are left in place. |
 | 6 · User configuration | Copies entries from `home/` into `$HOME`, `config/` into `~/.config`, user scripts into `~/.local/bin`, and `assets/` to `~/Pictures/Wallpapers`. Existing conflicting destinations are moved into a timestamped `~/.config_backup/` directory first. |
 | 7 · Optional root setup | If confirmed, copies the Zsh plugins for root, links the user's copied `.zshrc` and Starship config into root's home, and attempts to set root's login shell to Zsh. |
-| 8 · Final setup | Sets executable bits on selected scripts, attempts to set the user's login shell to Zsh, applies the first JPG/PNG/JPEG wallpaper it finds, copies LightDM and GTK theme files, enables the user's PipeWire services and the system `accounts-daemon.service` and `lightdm.service`, and writes the selected Xorg keyboard layout (`us` or `es`). |
+| 8 · Final setup | Sets executable bits on selected scripts, attempts to set the user's login shell to Zsh, applies the first JPG/PNG/JPEG wallpaper it finds, copies LightDM, GTK, and systemd lock/suspend files, enables the user's PipeWire services and the system `accounts-daemon.service` and `lightdm.service`, and writes the selected Xorg keyboard layout (`us` or `es`). |
 | Finish | Prints the backup location when one was created and offers to reboot immediately. Declining the reboot leaves it to you to start the configured session later. |
 
 The installer’s numbered progress messages correspond to its eight main progress phases; locale setup is also announced before the package phase.
@@ -142,7 +145,7 @@ The base package list passed to `pacman` is:
 | Desktop and Xorg | `firefox`, `feh`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
 | EWW runtime support | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Login and font | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
-| Media and controls | `maim`, `imagemagick`, `xsecurelock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
+| Media and controls | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
 | Utilities | `jq`, `socat`, `xclip` |
 
 In addition, the script installs **EWW** through the AUR and installs **Paru** from the AUR if it is missing. Zsh plugins are fetched directly from their upstream Git repositories. Neovim plugins and Treesitter parsers are downloaded when Neovim is first launched.
@@ -158,6 +161,8 @@ The installer makes system-wide changes in addition to copying configuration fil
 | `/etc/locale.gen`, `/etc/locale.conf` | Enables and selects the locale chosen at startup: English (US) or Spanish (Spain), both UTF-8. |
 | `/etc/lightdm/lightdm.conf`, `/etc/lightdm/lightdm-gtk-greeter.conf` | Replaces these files with the repository versions when the copy succeeds. |
 | `/usr/share/themes/TNPUNK/` | Copies the GTK theme into the system theme directory. |
+| `/etc/systemd/logind.conf` | Replaces the logind configuration with the repository version, which sets lid-close behavior to suspend. |
+| `/usr/lib/systemd/system-sleep/xsecurelock` | Installs an executable systemd sleep hook that signals `xsecurelock` after resume. |
 | `/etc/X11/xorg.conf.d/00-keyboard.conf` | Writes an Xorg keyboard configuration using the selected layout (`us` or `es`); an existing file at this path is overwritten. |
 | systemd | Enables `accounts-daemon.service` and `lightdm.service` for startup. |
 | User systemd services | Enables `pipewire`, `pipewire-pulse`, and `wireplumber` for the current user. |
@@ -165,7 +170,7 @@ The installer makes system-wide changes in addition to copying configuration fil
 
 **Backups are limited.** Before copying, the installer moves conflicting user-level destinations into a timestamped backup directory. The script does **not** back up the system files listed above, preserve their previous contents, or reverse package/service changes. Review the script, back up relevant files, and make sure you know how to recover access to your system before proceeding.
 
-The script also removes `/tmp/paru` before cloning Paru there. Do not keep files you need in that exact temporary path while running the installer.
+The script also removes `/tmp/paru` before cloning Paru there. Do not keep files you need in that exact temporary path while running the installer. The X session starts `xss-lock` from `home/.xprofile`, using `$HOME` to locate the lock helper; `Super` + `Alt` + `L` runs the same helper directly. The helper uses `maim` and ImageMagick to create a styled screenshot for `xsecurelock`. The configured home-lid action suspends the system, with the lock coordinated by `xss-lock`.
 
 ### `06` / First login and everyday use
 
@@ -212,7 +217,7 @@ Edit files in `config/`, `home/`, or `system/`. The installer copies user config
 - **Bar and popup content:** `config/eww/modules/`, `config/eww/eww.yuck`, and `config/eww/variables.yuck`.
 - **Window behavior and shortcuts:** `config/bspwm/bspwmrc` and `config/sxhkd/sxhkdrc`.
 - **Neovim:** `config/nvim/init.lua`, `config/nvim/lua/config/`, and `config/nvim/lua/plugins/`.
-- **Session startup:** `home/.xprofile` and `config/bspwm/bspwmrc`.
+- **Session startup and screen lock:** `home/.xprofile`, `home/.local/bin/lock-toxic.sh`, `system/systemd/`, and `config/bspwm/bspwmrc`.
 - **Login and GTK appearance:** `system/lightdm/` and `system/themes/TNPUNK/`.
 - **Wallpaper:** replace or add an image in `assets/`. The installer copies the directory to `~/Pictures/Wallpapers` and initially applies the first matching image it finds.
 
@@ -243,6 +248,7 @@ Edit files in `config/`, `home/`, or `system/`. The installer copies user config
 - **No bar or popup:** from an X11 session, check `eww daemon` and run `eww open principal-bar`; then inspect EWW output for sensor names or missing helper commands.
 - **A copied config does not update:** copy the changed file or directory from this checkout to its destination under `$HOME` or `~/.config`.
 - **A shortcut does nothing:** check whether its external command (for example Firefox, NetworkManager, or xsecurelock) is installed and inspect the corresponding entry in `config/sxhkd/sxhkdrc`.
+- **The screen does not lock on suspend:** confirm the X session is running `xss-lock`, check the configured lock-helper path in `home/.xprofile`, and verify that the systemd sleep hook was installed.
 
 ### License
 
@@ -269,6 +275,7 @@ Este repositorio contiene tanto la configuración como un **instalador interacti
 | Renderizado y fondo | Picom · `feh` | Efectos del compositor y colocación del fondo de pantalla |
 | Shell y prompt | Zsh · Starship · fzf | Shell interactiva, prompt, autocompletado, alias y búsqueda |
 | Apariencia del sistema | LightDM · tema GTK | Configuración del gestor de inicio de sesión y tema GTK TNPUNK |
+| Bloqueo de pantalla | `xsecurelock` · `xss-lock` · hook de suspensión de systemd | Bloqueo personalizado manual y coordinado con la suspensión/reanudación |
 
 La paleta se construye sobre `#0A0C0E` (casi negro), `#121518` (superficie) y `#00FF66` (verde tóxico), con gris pizarra y rosa de alerta como colores secundarios.
 
@@ -281,6 +288,7 @@ La paleta se construye sobre `#0A0C0E` (casi negro), `#121518` (superficie) y `#
 - **Neovim** utiliza una configuración Lua modular con lazy.nvim, Treesitter, LSP, autocompletado y plugins de navegación, línea de estado y Git. Al iniciarlo por primera vez, lazy.nvim descarga los plugins configurados y Treesitter instala sus analizadores sintácticos.
 - **Rofi, Kitty, Picom y Zsh** comparten colores y tipografía. La configuración de shell incorpora plugins de Zsh, estilos para fzf, alias y un prompt de Starship.
 - **LightDM y GTK** extienden la apariencia a la pantalla de inicio y al tema GTK 3. Los archivos de inicio de sesión arrancan los procesos auxiliares y el fondo.
+- **El bloqueo de pantalla** usa `xsecurelock` y un script propio que captura y estiliza la pantalla actual. `xss-lock` se inicia con la sesión X y solicita el bloqueo al suspender; un hook de systemd envía una señal a `xsecurelock` al reanudar.
 
 ### `03` / Estructura del repositorio
 
@@ -302,6 +310,7 @@ La paleta se construye sobre `#0A0C0E` (casi negro), `#121518` (superficie) y `#
 │   └── .zshrc                      # Configuración de Zsh
 ├── system/
 │   ├── lightdm/                    # Configuración del gestor de inicio
+│   ├── systemd/                    # Ajustes de logind y hook tras reanudar
 │   └── themes/TNPUNK/              # Archivos del tema GTK
 ├── screenshots/                    # Vistas previas del escritorio y widgets
 ├── install.sh                      # Instalador interactivo para Arch Linux
@@ -345,7 +354,7 @@ El script usa `set -eo pipefail`, rechaza la ejecución como root, mantiene acti
 | 5 · Plugins de Zsh | Clona `zsh-syntax-highlighting` y `zsh-autosuggestions` en `~/.zsh`; descarga el plugin `sudo` de Oh My Zsh en ese mismo directorio. Si ya existen los directorios de plugins, los deja intactos. |
 | 6 · Configuración del usuario | Copia los elementos de `home/` en `$HOME`, `config/` en `~/.config`, los scripts de usuario en `~/.local/bin` y `assets/` en `~/Pictures/Wallpapers`. Antes de copiar, mueve los destinos existentes que entran en conflicto a una carpeta con marca de tiempo bajo `~/.config_backup/`. |
 | 7 · Configuración opcional de root | Si se confirma, copia los plugins de Zsh para root, enlaza el `.zshrc` y la configuración de Starship ya copiados en el home del usuario con el home de root e intenta cambiar su shell de inicio a Zsh. |
-| 8 · Ajustes finales | Asigna permisos de ejecución a ciertos scripts, intenta cambiar el shell del usuario a Zsh, aplica la primera imagen JPG/PNG/JPEG encontrada, copia los archivos de LightDM y del tema GTK, activa los servicios PipeWire del usuario y `accounts-daemon.service` y `lightdm.service` del sistema, y escribe la distribución de teclado seleccionada (`us` o `es`) para Xorg. |
+| 8 · Ajustes finales | Asigna permisos de ejecución a ciertos scripts, intenta cambiar el shell del usuario a Zsh, aplica la primera imagen JPG/PNG/JPEG encontrada, copia los archivos de LightDM, del tema GTK y del bloqueo/suspensión de systemd, activa los servicios PipeWire del usuario y `accounts-daemon.service` y `lightdm.service` del sistema, y escribe la distribución de teclado seleccionada (`us` o `es`) para Xorg. |
 | Final | Muestra la ruta de las copias de seguridad si creó alguna y ofrece reiniciar. Si no reinicias, tendrás que iniciar la sesión configurada más adelante. |
 
 Los mensajes de progreso numeran ocho fases principales; la configuración del idioma también se anuncia antes de instalar los paquetes.
@@ -363,7 +372,7 @@ La lista base que se pasa a `pacman` es:
 | Escritorio y Xorg | `firefox`, `feh`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
 | Soporte de EWW | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Inicio y tipografía | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
-| Multimedia y controles | `maim`, `imagemagick`, `xsecurelock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
+| Multimedia y controles | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
 | Utilidades | `jq`, `socat`, `xclip` |
 
 Además, el script instala **EWW** desde AUR e instala **Paru** desde AUR si no está disponible. Los plugins de Zsh se descargan directamente de sus repositorios de origen. Los plugins de Neovim y los analizadores de Treesitter se descargan al iniciar Neovim por primera vez.
@@ -379,6 +388,8 @@ Además de copiar archivos de configuración en tu directorio personal, el insta
 | `/etc/locale.gen`, `/etc/locale.conf` | Habilita y selecciona el idioma elegido al inicio: inglés (EE. UU.) o español (España), ambos UTF-8. |
 | `/etc/lightdm/lightdm.conf`, `/etc/lightdm/lightdm-gtk-greeter.conf` | Sustituye estos archivos por las versiones del repositorio si la copia se realiza correctamente. |
 | `/usr/share/themes/TNPUNK/` | Copia el tema GTK al directorio de temas del sistema. |
+| `/etc/systemd/logind.conf` | Sustituye la configuración de logind por la versión del repositorio, que establece la suspensión al cerrar la tapa. |
+| `/usr/lib/systemd/system-sleep/xsecurelock` | Instala un hook ejecutable de systemd que envía una señal a `xsecurelock` al reanudar. |
 | `/etc/X11/xorg.conf.d/00-keyboard.conf` | Escribe una configuración Xorg con la distribución elegida (`us` o `es`); sobrescribe cualquier archivo que ya exista en esa ruta. |
 | systemd | Habilita `accounts-daemon.service` y `lightdm.service` para el inicio del sistema. |
 | Servicios de usuario | Habilita `pipewire`, `pipewire-pulse` y `wireplumber` para el usuario actual. |
@@ -386,7 +397,7 @@ Además de copiar archivos de configuración en tu directorio personal, el insta
 
 **Las copias de seguridad son limitadas.** Antes de copiar, el instalador mueve los destinos del usuario que entren en conflicto a una carpeta de respaldo con marca de tiempo. El script **no** guarda copias de los archivos de sistema anteriores ni revierte cambios de paquetes o servicios. Revisa el script, guarda los archivos relevantes y asegúrate de saber cómo recuperar el acceso al sistema antes de continuar.
 
-El script también elimina `/tmp/paru` antes de clonar allí Paru. No guardes archivos que necesites en esa ruta temporal exacta mientras ejecutas el instalador.
+El script también elimina `/tmp/paru` antes de clonar allí Paru. No guardes archivos que necesites en esa ruta temporal exacta mientras ejecutas el instalador. La sesión X inicia `xss-lock` desde `home/.xprofile` y usa `$HOME` para localizar el script de bloqueo; `Super` + `Alt` + `L` ejecuta el mismo script directamente. Este utiliza `maim` e ImageMagick para crear una captura estilizada para `xsecurelock`. El cierre de la tapa configurado suspende el equipo y `xss-lock` coordina el bloqueo.
 
 ### `06` / Primer inicio y uso diario
 
@@ -433,7 +444,7 @@ Edita los archivos de `config/`, `home/` o `system/`. El instalador copia la con
 - **Barra y ventanas emergentes:** `config/eww/modules/`, `config/eww/eww.yuck` y `config/eww/variables.yuck`.
 - **Comportamiento de ventanas y atajos:** `config/bspwm/bspwmrc` y `config/sxhkd/sxhkdrc`.
 - **Neovim:** `config/nvim/init.lua`, `config/nvim/lua/config/` y `config/nvim/lua/plugins/`.
-- **Inicio de sesión:** `home/.xprofile` y `config/bspwm/bspwmrc`.
+- **Inicio de sesión y bloqueo:** `home/.xprofile`, `home/.local/bin/lock-toxic.sh`, `system/systemd/` y `config/bspwm/bspwmrc`.
 - **Apariencia de LightDM y GTK:** `system/lightdm/` y `system/themes/TNPUNK/`.
 - **Fondo:** sustituye o añade una imagen en `assets/`. El instalador copia el directorio a `~/Pictures/Wallpapers` y aplica inicialmente la primera imagen compatible que encuentre.
 
@@ -464,6 +475,7 @@ Edita los archivos de `config/`, `home/` o `system/`. El instalador copia la con
 - **No aparece la barra o una ventana emergente:** desde X11, comprueba `eww daemon` y ejecuta `eww open principal-bar`; revisa la salida de EWW por si hay sensores o comandos auxiliares ausentes.
 - **Un cambio copiado no se refleja:** copia el archivo o directorio modificado desde este checkout a su destino en `$HOME` o `~/.config`.
 - **Un atajo no funciona:** comprueba que esté instalado el comando externo correspondiente (por ejemplo Firefox, NetworkManager o xsecurelock) y revisa su entrada en `config/sxhkd/sxhkdrc`.
+- **No se bloquea la pantalla al suspender:** confirma que la sesión X esté ejecutando `xss-lock`, revisa la ruta al script de bloqueo en `home/.xprofile` y verifica que se haya instalado el hook de systemd.
 
 ### Licencia
 
