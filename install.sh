@@ -157,7 +157,7 @@ safe_copy() {
 
 echo -e "\n${GREEN}$MSG_STEP2${RESET}"
 sudo pacman -Syyu --needed --noconfirm \
-	neovim tree-sitter-cli npm unzip \
+	neovim tree-sitter tree-sitter-cli npm unzip \
 	base-devel git rust zsh lsd bat fzf starship firefox feh \
 	bspwm sxhkd kitty picom rofi python python-dbus python-gobject \
 	ttf-hack-nerd lightdm lightdm-gtk-greeter accountsservice \
