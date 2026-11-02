@@ -1,2 +1,3 @@
 #!/bin/bash
-pgrep -x eww > /dev/null || eww daemon &
+pgrep -x eww >/dev/null || eww daemon &
+xss-lock --transfer-sleep-lock -- /home/jt/.local/bin/lock-toxic.sh &
