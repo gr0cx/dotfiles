@@ -19,6 +19,8 @@ return {
                     "omnisharp",
                     "jdtls",
                     "marksman",
+                    "html",
+                    "cssls"
                 },
             })
         end,
