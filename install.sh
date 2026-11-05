@@ -20,6 +20,7 @@ set -eo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 BACKUP_DIR="$HOME/.config_backup/$TIMESTAMP"
+ROOT_BACKUP_DIR="/root/.config_backup/$TIMESTAMP"
 PAUSE_SEC=1
 
 # --- COLORS ---
@@ -130,7 +131,7 @@ echo "LANG=${LOCALE}" | sudo tee /etc/locale.conf >/dev/null
 step_pause
 
 # ------------------------------------------------------------------------------
-# 3. BACKUP AND SECURE LINK
+# 3. BACKUP AND SECURE COPY FUNCTION
 # ------------------------------------------------------------------------------
 
 safe_copy() {
@@ -148,6 +149,24 @@ safe_copy() {
 	fi
 
 	cp -rf "$src" "$dest"
+	echo -e "  ${GREEN}$MSG_OK${RESET} Installed -> $dest"
+}
+
+safe_copy_root() {
+	local src="$1"
+	local dest="$2"
+
+	[ -e "$src" ] || return 0
+
+	sudo mkdir -p "$(dirname "$dest")"
+
+	if [ -e "$dest" ] || [ -L "$dest" ]; then
+		echo -e "  ${YELLOW}$MSG_BACKUP${RESET} $dest -> $ROOT_BACKUP_DIR/"
+		sudo mkdir -p "$ROOT_BACKUP_DIR"
+		sudo mv "$dest" "$ROOT_BACKUP_DIR/" 2>/dev/null || true
+	fi
+
+	sudo cp -rf "$src" "$dest"
 	echo -e "  ${GREEN}$MSG_OK${RESET} Installed -> $dest"
 }
 
@@ -251,14 +270,15 @@ if [[ "$response" =~ $CONFIRM_REGEX ]]; then
 	echo -e "\n${GREEN}$MSG_STEP6${RESET}"
 
 	echo -e "$MSG_ROOT_DIR"
-	sudo mkdir -p /root/.config
-	sudo cp -r "$ZSH_PLUGINS_DIR" /root/.zsh
+	safe_copy_root "$ZSH_PLUGINS_DIR" "/root/.zsh"
 
-	echo -e "$MSG_ROOT_LINK"
-	sudo ln -sfn "$HOME/.zshrc" "/root/.zshrc"
-	echo -e "  ${GREEN}$MSG_OK${RESET} /root/.zshrc -> $DOTFILES_DIR/home/.zshrc"
-	sudo ln -sfn "$HOME/.config/starship.toml" "/root/.config/starship.toml"
-	echo -e "  ${GREEN}$MSG_OK${RESET} /root/.config/starship.toml -> $DOTFILES_DIR/config/starship.toml"
+	echo -e "$MSG_ROOT_COPY"
+	safe_copy_root "$DOTFILES_DIR/home/.zshrc" "/root/.zshrc"
+
+	[ -d "$DOTFILES_DIR/config/nvim" ] && safe_copy_root "$DOTFILES_DIR/config/nvim" "/root/.config/nvim"
+	[ -f "$DOTFILES_DIR/config/starship.toml" ] && safe_copy_root "$DOTFILES_DIR/config/starship.toml" "/root/.config/starship.toml"
+
+	sudo chown -R root:root /root/.zsh /root/.zshrc /root/.config 2>/dev/null || true
 
 	echo -e "$MSG_ROOT_SHELL"
 	sudo chsh -s "$(which zsh)" root || true
