@@ -324,11 +324,12 @@ if [ -d "$DOTFILES_DIR/system/themes/TNPUNK" ]; then
 	sudo cp -rf "$DOTFILES_DIR/system/themes/TNPUNK/"* /usr/share/themes/TNPUNK/
 fi
 
+sudo mkdir -p /etc/systemd/logind.conf.d
 sudo mkdir -p /usr/lib/systemd/system-sleep
 
-sudo cp -f "$DOTFILES_DIR/system/systemd/logind.conf" /etc/systemd/logind.conf
-sudo cp -f "$DOTFILES_DIR/system/systemd/system-sleep/xsecurelock" /usr/lib/systemd/system-sleep/xsecurelock
+sudo cp -rf "$DOTFILES_DIR/system/systemd/logind.conf.d/"* /etc/systemd/logind.conf.d/
 
+sudo cp -f "$DOTFILES_DIR/system/systemd/system-sleep/xsecurelock" /usr/lib/systemd/system-sleep/xsecurelock
 sudo chmod +x /usr/lib/systemd/system-sleep/xsecurelock
 
 systemctl --user enable pipewire pipewire-pulse wireplumber
