@@ -178,6 +178,7 @@ echo -e "\n${GREEN}$MSG_STEP2${RESET}"
 sudo pacman -Syyu --needed --noconfirm \
 	neovim tree-sitter tree-sitter-cli npm unzip \
 	base-devel git rust zsh lsd bat fzf starship firefox feh \
+	vulkan-intel intel-media-driver thermald tlp tlp-rdw acpi \
 	bspwm sxhkd kitty picom rofi python python-dbus python-gobject \
 	ttf-hack-nerd lightdm lightdm-gtk-greeter accountsservice \
 	maim imagemagick xsecurelock xss-lock \
@@ -336,6 +337,9 @@ systemctl --user enable pipewire pipewire-pulse wireplumber
 
 sudo systemctl enable accounts-daemon.service
 sudo systemctl enable lightdm.service
+sudo systemctl enable thermald.service
+sudo systemctl enable tlp.service
+sudo systemctl enable fstrim.timer
 
 sudo mkdir -p /etc/X11/xorg.conf.d
 sudo tee /etc/X11/xorg.conf.d/00-keyboard.conf >/dev/null <<EOF

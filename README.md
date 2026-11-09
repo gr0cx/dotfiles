@@ -110,7 +110,7 @@ chmod +x install.sh
 ./install.sh
 ```
 
-The `--depth 1` option downloads the latest snapshot without the full Git history. Omit it if you want the complete history. The installer asks for confirmation before making changes, requests sudo credentials, and asks whether to configure root and reboot at the end.
+The `--depth 1` option downloads the latest snapshot without the full Git history. Omit it if you want the complete history. The installer first asks you to choose English or Spanish, then asks for confirmation before making changes. It requests sudo credentials and asks whether to configure root and reboot at the end.
 
 > **Review before running:** read [`install.sh`](./install.sh). This script installs packages and writes to system paths. It does not provide an uninstall command or a complete rollback.
 
@@ -126,8 +126,8 @@ The script uses `set -eo pipefail`, rejects execution as root, keeps its sudo au
 | 4 · EWW | Uses `paru` to install `eww` from the AUR. |
 | 5 · Zsh plugins | Clones `zsh-syntax-highlighting` and `zsh-autosuggestions` into `~/.zsh`; downloads the Oh My Zsh `sudo` plugin into the same directory. Existing plugin directories are left in place. |
 | 6 · User configuration | Copies entries from `home/` into `$HOME`, `config/` into `~/.config`, user scripts into `~/.local/bin`, and `assets/` to `~/Pictures/Wallpapers`. Existing conflicting destinations are moved into a timestamped `~/.config_backup/` directory first. |
-| 7 · Optional root setup | If confirmed, copies the Zsh plugins for root, links the user's copied `.zshrc` and Starship config into root's home, and attempts to set root's login shell to Zsh. |
-| 8 · Final setup | Sets executable bits on selected scripts, attempts to set the user's login shell to Zsh, applies the first JPG/PNG/JPEG wallpaper it finds, copies LightDM, GTK, and systemd lock/suspend files, enables the user's PipeWire services and the system `accounts-daemon.service` and `lightdm.service`, and writes the selected Xorg keyboard layout (`us` or `es`). |
+| 7 · Optional root setup | If confirmed, copies the Zsh plugins, `.zshrc`, Neovim configuration, and Starship configuration for root, backing up conflicting destinations under `/root/.config_backup/`, and attempts to set root's login shell to Zsh. |
+| 8 · Final setup | Sets executable bits on selected scripts, attempts to set the user's login shell to Zsh, applies the first JPG/PNG/JPEG wallpaper it finds, copies LightDM, GTK, and systemd lock/suspend files, enables the user's PipeWire services and the system `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service`, and `fstrim.timer`, and writes the selected Xorg keyboard layout (`us` or `es`). |
 | Finish | Prints the backup location when one was created and offers to reboot immediately. Declining the reboot leaves it to you to start the configured session later. |
 
 The installer’s numbered progress messages correspond to its eight main progress phases; locale setup is also announced before the package phase.
@@ -142,7 +142,8 @@ The base package list passed to `pacman` is:
 | Group | Packages |
 | --- | --- |
 | Build, editor, and shell | `base-devel`, `git`, `rust`, `neovim`, `tree-sitter`, `tree-sitter-cli`, `npm`, `unzip`, `zsh`, `lsd`, `bat`, `fzf`, `starship` |
-| Desktop and Xorg | `firefox`, `feh`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
+| Desktop, graphics, and Xorg | `firefox`, `feh`, `vulkan-intel`, `intel-media-driver`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
+| Power and hardware | `thermald`, `tlp`, `tlp-rdw`, `acpi` |
 | EWW runtime support | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Login and font | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
 | Media and controls | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
@@ -161,14 +162,14 @@ The installer makes system-wide changes in addition to copying configuration fil
 | `/etc/locale.gen`, `/etc/locale.conf` | Enables and selects the locale chosen at startup: English (US) or Spanish (Spain), both UTF-8. |
 | `/etc/lightdm/lightdm.conf`, `/etc/lightdm/lightdm-gtk-greeter.conf` | Replaces these files with the repository versions when the copy succeeds. |
 | `/usr/share/themes/TNPUNK/` | Copies the GTK theme into the system theme directory. |
-| `/etc/systemd/logind.conf` | Replaces the logind configuration with the repository version, which sets lid-close behavior to suspend. |
+| `/etc/systemd/logind.conf.d/lid.conf` | Installs a logind drop-in that sets lid-close behavior to suspend without replacing `/etc/systemd/logind.conf`. |
 | `/usr/lib/systemd/system-sleep/xsecurelock` | Installs an executable systemd sleep hook that signals `xsecurelock` after resume. |
 | `/etc/X11/xorg.conf.d/00-keyboard.conf` | Writes an Xorg keyboard configuration using the selected layout (`us` or `es`); an existing file at this path is overwritten. |
-| systemd | Enables `accounts-daemon.service` and `lightdm.service` for startup. |
+| systemd | Enables `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service`, and `fstrim.timer` for startup/scheduled operation. |
 | User systemd services | Enables `pipewire`, `pipewire-pulse`, and `wireplumber` for the current user. |
 | Login shell | Attempts to change the current user's default shell to Zsh; root's shell change is optional. |
 
-**Backups are limited.** Before copying, the installer moves conflicting user-level destinations into a timestamped backup directory. The script does **not** back up the system files listed above, preserve their previous contents, or reverse package/service changes. Review the script, back up relevant files, and make sure you know how to recover access to your system before proceeding.
+**Backups are limited.** Before copying, the installer moves conflicting user-level destinations into a timestamped directory under `~/.config_backup/`; if root setup is selected, conflicting root destinations go under `/root/.config_backup/`. The script does **not** back up the system files listed above, preserve their previous contents, or reverse package/service changes. Review the script, back up relevant files, and make sure you know how to recover access to your system before proceeding.
 
 The script also removes `/tmp/paru` before cloning Paru there. Do not keep files you need in that exact temporary path while running the installer. The X session starts `xss-lock` from `home/.xprofile`, using `$HOME` to locate the lock helper; `Super` + `Alt` + `L` runs the same helper directly. The helper uses `maim` and ImageMagick to create a styled screenshot for `xsecurelock`. The configured home-lid action suspends the system, with the lock coordinated by `xss-lock`.
 
@@ -337,7 +338,7 @@ chmod +x install.sh
 ./install.sh
 ```
 
-La opción `--depth 1` descarga el estado más reciente sin todo el historial de Git. Omítela si quieres el historial completo. El instalador pide confirmación antes de realizar cambios, solicita la contraseña de `sudo` y pregunta si quieres configurar root y reiniciar al terminar.
+La opción `--depth 1` descarga el estado más reciente sin todo el historial de Git. Omítela si quieres el historial completo. Primero, el instalador te pide elegir inglés o español; después pide confirmación antes de realizar cambios. Solicita la contraseña de `sudo` y pregunta si quieres configurar root y reiniciar al terminar.
 
 > **Revisa antes de ejecutar:** lee [`install.sh`](./install.sh). Este script instala paquetes y escribe en rutas del sistema. No incluye un desinstalador ni una reversión completa.
 
@@ -353,8 +354,8 @@ El script usa `set -eo pipefail`, rechaza la ejecución como root, mantiene acti
 | 4 · EWW | Instala `eww` desde AUR mediante `paru`. |
 | 5 · Plugins de Zsh | Clona `zsh-syntax-highlighting` y `zsh-autosuggestions` en `~/.zsh`; descarga el plugin `sudo` de Oh My Zsh en ese mismo directorio. Si ya existen los directorios de plugins, los deja intactos. |
 | 6 · Configuración del usuario | Copia los elementos de `home/` en `$HOME`, `config/` en `~/.config`, los scripts de usuario en `~/.local/bin` y `assets/` en `~/Pictures/Wallpapers`. Antes de copiar, mueve los destinos existentes que entran en conflicto a una carpeta con marca de tiempo bajo `~/.config_backup/`. |
-| 7 · Configuración opcional de root | Si se confirma, copia los plugins de Zsh para root, enlaza el `.zshrc` y la configuración de Starship ya copiados en el home del usuario con el home de root e intenta cambiar su shell de inicio a Zsh. |
-| 8 · Ajustes finales | Asigna permisos de ejecución a ciertos scripts, intenta cambiar el shell del usuario a Zsh, aplica la primera imagen JPG/PNG/JPEG encontrada, copia los archivos de LightDM, del tema GTK y del bloqueo/suspensión de systemd, activa los servicios PipeWire del usuario y `accounts-daemon.service` y `lightdm.service` del sistema, y escribe la distribución de teclado seleccionada (`us` o `es`) para Xorg. |
+| 7 · Configuración opcional de root | Si se confirma, copia los plugins de Zsh, `.zshrc`, la configuración de Neovim y la de Starship para root; antes respalda los destinos existentes que entren en conflicto bajo `/root/.config_backup/` e intenta cambiar su shell de inicio a Zsh. |
+| 8 · Ajustes finales | Asigna permisos de ejecución a ciertos scripts, intenta cambiar el shell del usuario a Zsh, aplica la primera imagen JPG/PNG/JPEG encontrada, copia los archivos de LightDM, del tema GTK y del bloqueo/suspensión de systemd, activa los servicios PipeWire del usuario y `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service` y `fstrim.timer` del sistema, y escribe la distribución de teclado seleccionada (`us` o `es`) para Xorg. |
 | Final | Muestra la ruta de las copias de seguridad si creó alguna y ofrece reiniciar. Si no reinicias, tendrás que iniciar la sesión configurada más adelante. |
 
 Los mensajes de progreso numeran ocho fases principales; la configuración del idioma también se anuncia antes de instalar los paquetes.
@@ -369,7 +370,8 @@ La lista base que se pasa a `pacman` es:
 | Grupo | Paquetes |
 | --- | --- |
 | Compilación, editor y shell | `base-devel`, `git`, `rust`, `neovim`, `tree-sitter`, `tree-sitter-cli`, `npm`, `unzip`, `zsh`, `lsd`, `bat`, `fzf`, `starship` |
-| Escritorio y Xorg | `firefox`, `feh`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
+| Escritorio, gráficos y Xorg | `firefox`, `feh`, `vulkan-intel`, `intel-media-driver`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
+| Energía y hardware | `thermald`, `tlp`, `tlp-rdw`, `acpi` |
 | Soporte de EWW | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Inicio y tipografía | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
 | Multimedia y controles | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
@@ -388,14 +390,14 @@ Además de copiar archivos de configuración en tu directorio personal, el insta
 | `/etc/locale.gen`, `/etc/locale.conf` | Habilita y selecciona el idioma elegido al inicio: inglés (EE. UU.) o español (España), ambos UTF-8. |
 | `/etc/lightdm/lightdm.conf`, `/etc/lightdm/lightdm-gtk-greeter.conf` | Sustituye estos archivos por las versiones del repositorio si la copia se realiza correctamente. |
 | `/usr/share/themes/TNPUNK/` | Copia el tema GTK al directorio de temas del sistema. |
-| `/etc/systemd/logind.conf` | Sustituye la configuración de logind por la versión del repositorio, que establece la suspensión al cerrar la tapa. |
+| `/etc/systemd/logind.conf.d/lid.conf` | Instala un drop-in de logind que establece la suspensión al cerrar la tapa sin sustituir `/etc/systemd/logind.conf`. |
 | `/usr/lib/systemd/system-sleep/xsecurelock` | Instala un hook ejecutable de systemd que envía una señal a `xsecurelock` al reanudar. |
 | `/etc/X11/xorg.conf.d/00-keyboard.conf` | Escribe una configuración Xorg con la distribución elegida (`us` o `es`); sobrescribe cualquier archivo que ya exista en esa ruta. |
-| systemd | Habilita `accounts-daemon.service` y `lightdm.service` para el inicio del sistema. |
+| systemd | Habilita `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service` y `fstrim.timer` para el inicio/funcionamiento programado. |
 | Servicios de usuario | Habilita `pipewire`, `pipewire-pulse` y `wireplumber` para el usuario actual. |
 | Shell de inicio | Intenta cambiar la shell predeterminada del usuario actual a Zsh; el cambio de la shell de root es opcional. |
 
-**Las copias de seguridad son limitadas.** Antes de copiar, el instalador mueve los destinos del usuario que entren en conflicto a una carpeta de respaldo con marca de tiempo. El script **no** guarda copias de los archivos de sistema anteriores ni revierte cambios de paquetes o servicios. Revisa el script, guarda los archivos relevantes y asegúrate de saber cómo recuperar el acceso al sistema antes de continuar.
+**Las copias de seguridad son limitadas.** Antes de copiar, el instalador mueve los destinos del usuario que entren en conflicto a una carpeta con marca de tiempo bajo `~/.config_backup/`; si eliges configurar root, respalda sus destinos en conflicto bajo `/root/.config_backup/`. El script **no** guarda copias de los archivos de sistema anteriores ni revierte cambios de paquetes o servicios. Revisa el script, guarda los archivos relevantes y asegúrate de saber cómo recuperar el acceso al sistema antes de continuar.
 
 El script también elimina `/tmp/paru` antes de clonar allí Paru. No guardes archivos que necesites en esa ruta temporal exacta mientras ejecutas el instalador. La sesión X inicia `xss-lock` desde `home/.xprofile` y usa `$HOME` para localizar el script de bloqueo; `Super` + `Alt` + `L` ejecuta el mismo script directamente. Este utiliza `maim` e ImageMagick para crear una captura estilizada para `xsecurelock`. El cierre de la tapa configurado suspende el equipo y `xss-lock` coordina el bloqueo.
 
