@@ -181,8 +181,9 @@ sudo pacman -Syyu --needed --noconfirm \
 	vulkan-intel intel-media-driver thermald tlp tlp-rdw acpi \
 	bspwm sxhkd kitty picom rofi python python-dbus python-gobject \
 	ttf-hack-nerd lightdm lightdm-gtk-greeter accountsservice \
-	maim imagemagick xsecurelock xss-lock libinput libinput-tools \
-	pipewire pipewire-pulse pipewire-alsa wireplumber pamixer alsa-utils playerctl brightnessctl \
+	maim imagemagick xsecurelock xss-lock xf86-input-libinput libinput libinput-tools \
+	pipewire pipewire-pulse pipewire-alsa wireplumber pamixer sof-firmware alsa-ucm-conf alsa-utils \
+	playerctl brightnessctl sound-theme-freedesktop \
 	jq socat xclip xorg-setxkbmap mesa mpv libnotify \
 	dconf xdg-desktop-portal xdg-desktop-portal-gtk
 step_pause
