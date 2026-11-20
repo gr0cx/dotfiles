@@ -181,7 +181,7 @@ sudo pacman -Syyu --needed --noconfirm \
 	vulkan-intel intel-media-driver thermald tlp tlp-rdw acpi \
 	bspwm sxhkd kitty picom rofi python python-dbus python-gobject \
 	ttf-hack-nerd lightdm lightdm-gtk-greeter accountsservice \
-	maim imagemagick xsecurelock xss-lock \
+	maim imagemagick xsecurelock xss-lock libinput libinput-tools \
 	pipewire pipewire-pulse pipewire-alsa wireplumber pamixer alsa-utils playerctl brightnessctl \
 	jq socat xclip xorg-setxkbmap mesa mpv libnotify \
 	dconf xdg-desktop-portal xdg-desktop-portal-gtk
@@ -327,11 +327,17 @@ fi
 
 sudo mkdir -p /etc/systemd/logind.conf.d
 sudo mkdir -p /usr/lib/systemd/system-sleep
+sudo mkdir -p /etc/X11/xorg.conf.d
+sudo mkdir -p /etc/udev/hwdb.d
 
 sudo cp -rf "$DOTFILES_DIR/system/systemd/logind.conf.d/"* /etc/systemd/logind.conf.d/
+sudo cp -rf "$DOTFILES_DIR/system/X11/xorg.conf.d/"* /etc/X11/xorg.conf.d/
+sudo cp -rf "$DOTFILES_DIR/system/udev/hwdb.d/"* /etc/udev/hwdb.d/
 
 sudo cp -f "$DOTFILES_DIR/system/systemd/system-sleep/xsecurelock" /usr/lib/systemd/system-sleep/xsecurelock
 sudo chmod +x /usr/lib/systemd/system-sleep/xsecurelock
+
+sudo systemd-hwdb update
 
 systemctl --user enable pipewire pipewire-pulse wireplumber
 
