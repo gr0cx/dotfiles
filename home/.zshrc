@@ -16,6 +16,7 @@ bindkey "^[[1;5D" backward-word
 bindkey "^H" backward-kill-word
 bindkey "^[[127;5u" backward-kill-word
 bindkey "^[[3;5~" kill-word
+bindkey "^[[3~" delete-char
 
 # --- COMPINIT WITH CACHE ---
 zstyle :compinstall filename "$HOME/.zshrc"
