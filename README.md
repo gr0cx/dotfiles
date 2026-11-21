@@ -84,6 +84,8 @@ The palette is built around `#0A0C0E` (near-black), `#121518` (surface), and `#0
 ├── system/
 │   ├── lightdm/                    # Display-manager configuration
 │   ├── systemd/                    # logind settings and post-resume lock hook
+│   ├── udev/hwdb.d/                # Local touchpad hardware database
+│   ├── X11/xorg.conf.d/            # libinput touchpad configuration
 │   └── themes/TNPUNK/              # GTK theme files
 ├── screenshots/                    # Desktop and widget previews
 ├── install.sh                      # Interactive Arch Linux installer
@@ -127,7 +129,7 @@ The script uses `set -eo pipefail`, rejects execution as root, keeps its sudo au
 | 5 · Zsh plugins | Clones `zsh-syntax-highlighting` and `zsh-autosuggestions` into `~/.zsh`; downloads the Oh My Zsh `sudo` plugin into the same directory. Existing plugin directories are left in place. |
 | 6 · User configuration | Copies entries from `home/` into `$HOME`, `config/` into `~/.config`, user scripts into `~/.local/bin`, and `assets/` to `~/Pictures/Wallpapers`. Existing conflicting destinations are moved into a timestamped `~/.config_backup/` directory first. |
 | 7 · Optional root setup | If confirmed, copies the Zsh plugins, `.zshrc`, Neovim configuration, and Starship configuration for root, backing up conflicting destinations under `/root/.config_backup/`, and attempts to set root's login shell to Zsh. |
-| 8 · Final setup | Sets executable bits on selected scripts, attempts to set the user's login shell to Zsh, applies the first JPG/PNG/JPEG wallpaper it finds, copies LightDM, GTK, and systemd lock/suspend files, enables the user's PipeWire services and the system `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service`, and `fstrim.timer`, and writes the selected Xorg keyboard layout (`us` or `es`). |
+| 8 · Final setup | Sets executable bits on selected scripts, attempts to set the user's login shell to Zsh, applies the first JPG/PNG/JPEG wallpaper it finds, copies LightDM, GTK, libinput, udev, and systemd lock/suspend files, updates the system hardware database, enables the user's PipeWire services and the system `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service`, and `fstrim.timer`, and writes the selected Xorg keyboard layout (`us` or `es`). |
 | Finish | Prints the backup location when one was created and offers to reboot immediately. Declining the reboot leaves it to you to start the configured session later. |
 
 The installer’s numbered progress messages correspond to its eight main progress phases; locale setup is also announced before the package phase.
@@ -142,11 +144,11 @@ The base package list passed to `pacman` is:
 | Group | Packages |
 | --- | --- |
 | Build, editor, and shell | `base-devel`, `git`, `rust`, `neovim`, `tree-sitter`, `tree-sitter-cli`, `npm`, `unzip`, `zsh`, `lsd`, `bat`, `fzf`, `starship` |
-| Desktop, graphics, and Xorg | `firefox`, `feh`, `vulkan-intel`, `intel-media-driver`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
+| Desktop, graphics, and Xorg | `firefox`, `feh`, `vulkan-intel`, `intel-media-driver`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `xf86-input-libinput`, `libinput`, `libinput-tools`, `xorg-xinput`, `mesa` |
 | Power and hardware | `thermald`, `tlp`, `tlp-rdw`, `acpi` |
 | EWW runtime support | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Login and font | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
-| Media and controls | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
+| Media and controls | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `sof-firmware`, `alsa-ucm-conf`, `alsa-utils`, `sound-theme-freedesktop`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
 | Utilities | `jq`, `socat`, `xclip` |
 
 In addition, the script installs **EWW** through the AUR and installs **Paru** from the AUR if it is missing. Zsh plugins are fetched directly from their upstream Git repositories. Neovim plugins and Treesitter parsers are downloaded when Neovim is first launched.
@@ -165,6 +167,8 @@ The installer makes system-wide changes in addition to copying configuration fil
 | `/etc/systemd/logind.conf.d/lid.conf` | Installs a logind drop-in that sets lid-close behavior to suspend without replacing `/etc/systemd/logind.conf`. |
 | `/usr/lib/systemd/system-sleep/xsecurelock` | Installs an executable systemd sleep hook that signals `xsecurelock` after resume. |
 | `/etc/X11/xorg.conf.d/00-keyboard.conf` | Writes an Xorg keyboard configuration using the selected layout (`us` or `es`); an existing file at this path is overwritten. |
+| `/etc/X11/xorg.conf.d/40-libinput.conf` | Installs the touchpad configuration for libinput, including tapping, natural scrolling, acceleration, and speed settings. |
+| `/etc/udev/hwdb.d/61-evdev-local.hwdb` | Installs local evdev resolution data for the configured Synaptics touchpad, then refreshes the hardware database with `systemd-hwdb update`. |
 | systemd | Enables `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service`, and `fstrim.timer` for startup/scheduled operation. |
 | User systemd services | Enables `pipewire`, `pipewire-pulse`, and `wireplumber` for the current user. |
 | Login shell | Attempts to change the current user's default shell to Zsh; root's shell change is optional. |
@@ -312,6 +316,8 @@ La paleta se construye sobre `#0A0C0E` (casi negro), `#121518` (superficie) y `#
 ├── system/
 │   ├── lightdm/                    # Configuración del gestor de inicio
 │   ├── systemd/                    # Ajustes de logind y hook tras reanudar
+│   ├── udev/hwdb.d/                # Base de datos local de hardware del touchpad
+│   ├── X11/xorg.conf.d/            # Configuración libinput del touchpad
 │   └── themes/TNPUNK/              # Archivos del tema GTK
 ├── screenshots/                    # Vistas previas del escritorio y widgets
 ├── install.sh                      # Instalador interactivo para Arch Linux
@@ -355,7 +361,7 @@ El script usa `set -eo pipefail`, rechaza la ejecución como root, mantiene acti
 | 5 · Plugins de Zsh | Clona `zsh-syntax-highlighting` y `zsh-autosuggestions` en `~/.zsh`; descarga el plugin `sudo` de Oh My Zsh en ese mismo directorio. Si ya existen los directorios de plugins, los deja intactos. |
 | 6 · Configuración del usuario | Copia los elementos de `home/` en `$HOME`, `config/` en `~/.config`, los scripts de usuario en `~/.local/bin` y `assets/` en `~/Pictures/Wallpapers`. Antes de copiar, mueve los destinos existentes que entran en conflicto a una carpeta con marca de tiempo bajo `~/.config_backup/`. |
 | 7 · Configuración opcional de root | Si se confirma, copia los plugins de Zsh, `.zshrc`, la configuración de Neovim y la de Starship para root; antes respalda los destinos existentes que entren en conflicto bajo `/root/.config_backup/` e intenta cambiar su shell de inicio a Zsh. |
-| 8 · Ajustes finales | Asigna permisos de ejecución a ciertos scripts, intenta cambiar el shell del usuario a Zsh, aplica la primera imagen JPG/PNG/JPEG encontrada, copia los archivos de LightDM, del tema GTK y del bloqueo/suspensión de systemd, activa los servicios PipeWire del usuario y `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service` y `fstrim.timer` del sistema, y escribe la distribución de teclado seleccionada (`us` o `es`) para Xorg. |
+| 8 · Ajustes finales | Asigna permisos de ejecución a ciertos scripts, intenta cambiar el shell del usuario a Zsh, aplica la primera imagen JPG/PNG/JPEG encontrada, copia los archivos de LightDM, del tema GTK, libinput, udev y bloqueo/suspensión de systemd, actualiza la base de datos de hardware, activa los servicios PipeWire del usuario y `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service` y `fstrim.timer` del sistema, y escribe la distribución de teclado seleccionada (`us` o `es`) para Xorg. |
 | Final | Muestra la ruta de las copias de seguridad si creó alguna y ofrece reiniciar. Si no reinicias, tendrás que iniciar la sesión configurada más adelante. |
 
 Los mensajes de progreso numeran ocho fases principales; la configuración del idioma también se anuncia antes de instalar los paquetes.
@@ -370,11 +376,11 @@ La lista base que se pasa a `pacman` es:
 | Grupo | Paquetes |
 | --- | --- |
 | Compilación, editor y shell | `base-devel`, `git`, `rust`, `neovim`, `tree-sitter`, `tree-sitter-cli`, `npm`, `unzip`, `zsh`, `lsd`, `bat`, `fzf`, `starship` |
-| Escritorio, gráficos y Xorg | `firefox`, `feh`, `vulkan-intel`, `intel-media-driver`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `mesa` |
+| Escritorio, gráficos y Xorg | `firefox`, `feh`, `vulkan-intel`, `intel-media-driver`, `bspwm`, `sxhkd`, `kitty`, `picom`, `rofi`, `xorg-setxkbmap`, `xf86-input-libinput`, `libinput`, `libinput-tools`, `xorg-xinput`, `mesa` |
 | Energía y hardware | `thermald`, `tlp`, `tlp-rdw`, `acpi` |
 | Soporte de EWW | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Inicio y tipografía | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
-| Multimedia y controles | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `alsa-utils`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
+| Multimedia y controles | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `sof-firmware`, `alsa-ucm-conf`, `alsa-utils`, `sound-theme-freedesktop`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
 | Utilidades | `jq`, `socat`, `xclip` |
 
 Además, el script instala **EWW** desde AUR e instala **Paru** desde AUR si no está disponible. Los plugins de Zsh se descargan directamente de sus repositorios de origen. Los plugins de Neovim y los analizadores de Treesitter se descargan al iniciar Neovim por primera vez.
@@ -393,6 +399,8 @@ Además de copiar archivos de configuración en tu directorio personal, el insta
 | `/etc/systemd/logind.conf.d/lid.conf` | Instala un drop-in de logind que establece la suspensión al cerrar la tapa sin sustituir `/etc/systemd/logind.conf`. |
 | `/usr/lib/systemd/system-sleep/xsecurelock` | Instala un hook ejecutable de systemd que envía una señal a `xsecurelock` al reanudar. |
 | `/etc/X11/xorg.conf.d/00-keyboard.conf` | Escribe una configuración Xorg con la distribución elegida (`us` o `es`); sobrescribe cualquier archivo que ya exista en esa ruta. |
+| `/etc/X11/xorg.conf.d/40-libinput.conf` | Instala la configuración del touchpad para libinput, incluyendo tapping, scroll natural, aceleración y velocidad. |
+| `/etc/udev/hwdb.d/61-evdev-local.hwdb` | Instala datos locales evdev para el touchpad Synaptics configurado y actualiza la base de datos con `systemd-hwdb update`. |
 | systemd | Habilita `accounts-daemon.service`, `lightdm.service`, `thermald.service`, `tlp.service` y `fstrim.timer` para el inicio/funcionamiento programado. |
 | Servicios de usuario | Habilita `pipewire`, `pipewire-pulse` y `wireplumber` para el usuario actual. |
 | Shell de inicio | Intenta cambiar la shell predeterminada del usuario actual a Zsh; el cambio de la shell de root es opcional. |
