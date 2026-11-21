@@ -184,7 +184,7 @@ sudo pacman -Syyu --needed --noconfirm \
 	maim imagemagick xsecurelock xss-lock xf86-input-libinput libinput libinput-tools \
 	pipewire pipewire-pulse pipewire-alsa wireplumber pamixer sof-firmware alsa-ucm-conf alsa-utils \
 	playerctl brightnessctl sound-theme-freedesktop \
-	jq socat xclip xorg-setxkbmap mesa mpv libnotify \
+	jq socat xclip xorg-setxkbmap xorg-xinput mesa mpv libnotify \
 	dconf xdg-desktop-portal xdg-desktop-portal-gtk
 step_pause
 
