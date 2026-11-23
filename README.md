@@ -149,7 +149,7 @@ The base package list passed to `pacman` is:
 | EWW runtime support | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Login and font | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
 | Media and controls | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `sof-firmware`, `alsa-ucm-conf`, `alsa-utils`, `sound-theme-freedesktop`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
-| Utilities | `jq`, `socat`, `xclip` |
+| Utilities | `jq`, `socat`, `xclip`, `pacman-contrib` |
 
 In addition, the script installs **EWW** through the AUR and installs **Paru** from the AUR if it is missing. Zsh plugins are fetched directly from their upstream Git repositories. Neovim plugins and Treesitter parsers are downloaded when Neovim is first launched.
 
@@ -381,7 +381,7 @@ La lista base que se pasa a `pacman` es:
 | Soporte de EWW | `python`, `python-dbus`, `python-gobject`, `dconf`, `xdg-desktop-portal`, `xdg-desktop-portal-gtk` |
 | Inicio y tipografía | `ttf-hack-nerd`, `lightdm`, `lightdm-gtk-greeter`, `accountsservice` |
 | Multimedia y controles | `maim`, `imagemagick`, `xsecurelock`, `xss-lock`, `pipewire`, `pipewire-pulse`, `pipewire-alsa`, `wireplumber`, `pamixer`, `sof-firmware`, `alsa-ucm-conf`, `alsa-utils`, `sound-theme-freedesktop`, `playerctl`, `brightnessctl`, `mpv`, `libnotify` |
-| Utilidades | `jq`, `socat`, `xclip` |
+| Utilidades | `jq`, `socat`, `xclip`, `pacman-contrib` |
 
 Además, el script instala **EWW** desde AUR e instala **Paru** desde AUR si no está disponible. Los plugins de Zsh se descargan directamente de sus repositorios de origen. Los plugins de Neovim y los analizadores de Treesitter se descargan al iniciar Neovim por primera vez.
 
