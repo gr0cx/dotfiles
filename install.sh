@@ -185,7 +185,7 @@ sudo pacman -Syyu --needed --noconfirm \
 	pipewire pipewire-pulse pipewire-alsa wireplumber pamixer sof-firmware alsa-ucm-conf alsa-utils \
 	playerctl brightnessctl sound-theme-freedesktop \
 	jq socat xclip xorg-setxkbmap xorg-xinput mesa mpv libnotify \
-	dconf xdg-desktop-portal xdg-desktop-portal-gtk
+	dconf xdg-desktop-portal xdg-desktop-portal-gtk pacman-contrib
 step_pause
 
 # ------------------------------------------------------------------------------
